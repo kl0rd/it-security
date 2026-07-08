@@ -73,7 +73,7 @@ export interface AuditLog {
   sql_executed?: string;
   rollback_sql?: string;
   result?: string;
-  success: string;
+  success: 'success' | 'failure' | 'unknown';
   details?: Record<string, unknown>;
   created_at: string;
 }

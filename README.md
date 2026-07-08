@@ -193,13 +193,14 @@ ORDER BY p1.PROFILE;
 
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
-  -d "username=admin&******" | jq -r .access_token)
+  -d "username=admin&password=Admin123!" | jq -r .access_token)
 ```
 
 ### 2. Create a request (requester)
 
 ```bash
 curl -s -X POST http://localhost:8000/api/requests \
+  -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Grant DBA role to john_doe for incident INC-1234",
@@ -218,13 +219,15 @@ curl -s -X POST http://localhost:8000/api/requests \
 ### 3. Submit for approval
 
 ```bash
-curl -s -X POST http://localhost:8000/api/requests/1/submit
+curl -s -X POST http://localhost:8000/api/requests/1/submit \
+  -H "Authorization: $TOKEN"
 ```
 
 ### 4. Review the generated SQL
 
 ```bash
-curl -s http://localhost:8000/api/requests/1/sql
+curl -s http://localhost:8000/api/requests/1/sql \
+  -H "Authorization: $TOKEN"
 # Returns: { "execution_sql": "GRANT DBA TO JOHN_DOE", "rollback_sql": "REVOKE DBA FROM JOHN_DOE" }
 ```
 
@@ -232,6 +235,7 @@ curl -s http://localhost:8000/api/requests/1/sql
 
 ```bash
 curl -s -X POST http://localhost:8000/api/approvals/1 \
+  -H "Authorization: $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"approved": true}'
 ```
@@ -239,13 +243,15 @@ curl -s -X POST http://localhost:8000/api/approvals/1 \
 ### 6. Execute
 
 ```bash
-curl -s -X POST http://localhost:8000/api/execution/1/execute
+curl -s -X POST http://localhost:8000/api/execution/1/execute \
+  -H "Authorization: $TOKEN"
 ```
 
 ### 7. Rollback if needed
 
 ```bash
-curl -s -X POST http://localhost:8000/api/execution/1/rollback
+curl -s -X POST http://localhost:8000/api/execution/1/rollback \
+  -H "Authorization: $TOKEN"
 ```
 
 ---

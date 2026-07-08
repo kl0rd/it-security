@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
 
-    # Database (PostgreSQL)
-    DATABASE_URL: str = "******postgres:5432/dag_db"
+    # Database (PostgreSQL) — must be set via DATABASE_URL environment variable
+    DATABASE_URL: str = "postgresql://localhost:5432/dag_db"  # Must be overridden via DATABASE_URL env var
 
     # JWT Auth
     SECRET_KEY: str = "changeme-use-a-strong-secret-in-production"
