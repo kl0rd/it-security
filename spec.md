@@ -1,3 +1,17 @@
+# Feature Specification & Progress Tracker
+
+> **For AI agents:** This is the canonical progress-tracking document.
+> Mark a checkbox `☑` only when the feature is fully implemented, tested, and merged.
+> Update this file in the same PR that delivers the feature — never in a separate commit.
+> See [`agents.md`](agents.md) for the full agent guide and best practices.
+
+| Symbol | Meaning |
+|--------|---------|
+| `☐` | Not started or in progress |
+| `☑` | Fully implemented, tested, and merged |
+
+---
+
 # Epic 1 — Environment Management
 
 ## Objective
