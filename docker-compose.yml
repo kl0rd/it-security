@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  # -----------------------------------------------------------------------
+  # PostgreSQL application database
+  # -----------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dag_db
+      POSTGRES_USER: dag_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dag_user -d dag_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------------------
+  # Backend (FastAPI)
+  # -----------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://dag_user:${POSTGRES_PASSWORD:-changeme}@db:5432/dag_db
+      SECRET_KEY: ${SECRET_KEY:-changeme-use-a-strong-secret-in-production}
+      # Oracle credentials — never stored in the DB; set via env vars or a secret manager
+      ORACLE_HOST: ${ORACLE_HOST:-oracle}
+      ORACLE_PORT: ${ORACLE_PORT:-1521}
+      ORACLE_SERVICE_NAME: ${ORACLE_SERVICE_NAME:-ORCLPDB1}
+      ORACLE_ADMIN_USER: ${ORACLE_ADMIN_USER:-C##DAG_ADMIN}
+      ORACLE_ADMIN_PASSWORD: ${ORACLE_ADMIN_PASSWORD:-}
+      INITIAL_ADMIN_USERNAME: ${INITIAL_ADMIN_USERNAME:-admin}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-Admin123!}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  # -----------------------------------------------------------------------
+  # Frontend (React → Nginx)
+  # -----------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: ""
+
+volumes:
+  postgres_data:
